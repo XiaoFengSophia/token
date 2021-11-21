@@ -1,20 +1,22 @@
 package com.zxf;
 
-import com.auth0.jwt.interfaces.Claim;
 import com.zxf.entities.Student;
-import com.zxf.jwttoken.JwtToken;
+import com.zxf.utils.JwtUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ObjectUtils;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class AppTokenTests {
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
     @Test
     public void contextLoads() throws Exception {
@@ -23,18 +25,15 @@ public class AppTokenTests {
 
     @Test
     public void test() throws Exception {
-        String token = JwtToken.creatToken();
+        String token = jwtUtils.creatToken();
         System.out.println("token=" + token);
 
-        Map<String, Claim> claims = JwtToken.verifyToken(token);
-        String name = claims.get("name").asString();
-        String age = claims.get("age").asString();
-        String org = claims.get("org").asString();
+        Map<String, Object> claims = jwtUtils.getClaimByToken(token);
+        String name = (String) claims.get("name");
+        String age = (String) claims.get("age");
+        String org = (String) claims.get("org");
         System.out.println("name=" + name + "------" + "age=" + age + "------" + "org=" + org);
 
-        // 测试过期凭证
-        String expireToken = "eyJ0eXBlIjoiSldUIiwiYWxnIjoiSFMyNTYifQ.eyJvcmciOiLogZTlj4vnp5HmioAiLCJuYW1lIjoienhmZW5nIiwiZXhwIjoxNTg1MTA4Mzc2LCJpYXQiOjE1ODUxMDgzMTYsImFnZSI6IjI1In0.EQ3q1qK9nYUQrCg1009v1ph-MV8edMl_nZbpZaad6X4";
-        JwtToken.verifyToken(expireToken);
     }
 
     @Test

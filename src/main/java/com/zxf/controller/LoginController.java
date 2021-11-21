@@ -1,11 +1,15 @@
 package com.zxf.controller;
 
-import com.zxf.jwttoken.JwtToken;
+import com.alibaba.fastjson.JSONObject;
+import com.zxf.entities.Result;
 import com.zxf.service.ILoginService;
+import com.zxf.utils.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @Author: zhaoxiaofeng
@@ -16,16 +20,37 @@ import org.springframework.web.bind.annotation.RestController;
 public class LoginController {
 
     @Autowired
+    private JwtUtils jwtToken;
+
+    @Autowired
     private ILoginService loginService;
 
     @RequestMapping("/login")
-    public String login() throws Exception {
+    public void login(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        response.setContentType("application/json;charset=UTF-8");
+        ServletOutputStream outputStream = response.getOutputStream();
 
-        return JwtToken.creatToken();
-    }
-    @GetMapping("getMsg")
-    public String getMsg(){
+        String jwt = jwtToken.creatToken();
+        response.setHeader(jwtToken.getHeader(), jwt);
+        System.out.println("jwt = " + jwt);
+        Result result = Result.succ("");
+        outputStream.write(JSONObject.toJSONString(result).getBytes("UTF-8"));
 
-        return loginService.getMsg();
+        outputStream.flush();
+        outputStream.close();
     }
+
+    @RequestMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        response.setContentType("application/json;charset=UTF-8");
+        ServletOutputStream outputStream = response.getOutputStream();
+
+        response.setHeader(jwtToken.getHeader(), "");
+
+        Result result = Result.succ(200, "退出成功！", null);
+        outputStream.write(JSONObject.toJSONString(result).getBytes("UTF-8"));
+        outputStream.flush();
+        outputStream.close();
+    }
+
 }
